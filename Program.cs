@@ -23,19 +23,16 @@ namespace shopifyNonSeasonalFormatter
                 sourceWorksheet = workbook.Worksheet(1);
                 lastColumn = sourceWorksheet.LastColumnUsed().ColumnNumber();
                 lastRow = sourceWorksheet.LastRowUsed().RowNumber();
-                //var column = sourceWorksheet.Column(1); 
 
-                for (int i = 1; i <= lastColumn; i++)
+                //
+                // gets the columns from the sheet and if they're not empty gets the contents of each column and
+                // puts the range into the right slot in the column array, by putting it into the slot of that enum number
+                //
+                for (int columnNumber = 1; columnNumber <= lastColumn; columnNumber++)
                 {
-                    if(!sourceWorksheet.Cell(1, i).IsEmpty())
+                    if(!sourceWorksheet.Cell(1, columnNumber).IsEmpty())
                     {
-                        Console.WriteLine(  "HERE 1");
-                        string columnName = (string)sourceWorksheet.Cell(1, i).Value;
-                        Console.WriteLine(columnName);
-
-                        //
-                        // puts the range into the right slot in the column array, by putting it into the slot of that enum number
-                        //
+                        string columnName = (string)sourceWorksheet.Cell(1, columnNumber).Value;
                         switch (columnName.ToLower())
                         {
                             case "sku":
@@ -43,7 +40,7 @@ namespace shopifyNonSeasonalFormatter
                                 if(columns[(int)columnHeader.sku] == null)
                                 {
                                     //puts it in
-                                    columns[(int)columnHeader.sku] = createNewColumnObject(columnName, i);
+                                    columns[(int)columnHeader.sku] = createNewColumnObject(columnName, columnNumber);
                                 }
                                 else
                                 {
@@ -53,47 +50,77 @@ namespace shopifyNonSeasonalFormatter
 
                             case "item name" or "name":
                                 if (columns[(int)columnHeader.itemName] == null)
-                                { columns[(int)columnHeader.itemName] = createNewColumnObject(columnName, i); }                          
+                                { columns[(int)columnHeader.itemName] = createNewColumnObject(columnName, columnNumber); }                          
                                 else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }             
                                 break;
 
                             case "size":
                                 if (columns[(int)columnHeader.size] == null) 
-                                { columns[(int)columnHeader.size] = createNewColumnObject(columnName, i); }
+                                { columns[(int)columnHeader.size] = createNewColumnObject(columnName, columnNumber); }
                                 else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
                                 break;
 
                             case "barcode":
                                 if (columns[(int)columnHeader.barcode] == null)
-                                { columns[(int)columnHeader.barcode] = createNewColumnObject(columnName, i); }
+                                { columns[(int)columnHeader.barcode] = createNewColumnObject(columnName, columnNumber); }
                                 else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
                                 break;
-                            case "e":
 
+                            case "price":
+                                if (columns[(int)columnHeader.price] == null)
+                                { columns[(int)columnHeader.price] = createNewColumnObject(columnName, columnNumber); }
+                                else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
                                 break;
-                            case "t":
 
+                            case "supplier" or "supplier name" or "supplierName":
+                                if (columns[(int)columnHeader.supplierName] == null)
+                                { columns[(int)columnHeader.supplierName] = createNewColumnObject(columnName, columnNumber); }
+                                else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
                                 break;
-                            case "i":
 
+                            case "gender":
+                                if (columns[(int)columnHeader.gender] == null)
+                                { columns[(int)columnHeader.gender] = createNewColumnObject(columnName, columnNumber); }
+                                else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
+                                break;
+
+                            case "color_metafield" or "color metafield":
+                                if (columns[(int)columnHeader.color_metafield] == null)
+                                { columns[(int)columnHeader.color_metafield] = createNewColumnObject(columnName, columnNumber); }
+                                else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
+                                break;
+
+                            case "color_variant":
+                                if (columns[(int)columnHeader.color_variant] == null)
+                                { columns[(int)columnHeader.color_variant] = createNewColumnObject(columnName, columnNumber); }
+                                else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
+                                break;
+
+                            case "extraTags" or "extra tags":
+                                if (columns[(int)columnHeader.extraTags] == null)
+                                { columns[(int)columnHeader.extraTags] = createNewColumnObject(columnName, columnNumber); }
+                                else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
                                 break;
                         }
                     }
                     else
                     {
-                        showAlert($"column {i} is empty", "");
+                        showAlert($"column {columnNumber} is empty", "");
                     }
                 }
 
                 foreach (column column in columns)
                 {
-                    Console.WriteLine();
-                    Console.WriteLine();
-                    Console.WriteLine(column.columnName.ToUpper());
-                    Console.WriteLine();
-                    foreach (IXLCell cell in column.rows.Cells())
+                    if(column!= null)
                     {
-                        Console.WriteLine(cell.Value);
+                        Console.WriteLine();
+                        Console.WriteLine();
+                        Console.WriteLine(column.columnName.ToUpper());
+                        Console.WriteLine();
+                        foreach (IXLCell cell in column.rows.Cells())
+                        {
+                            Console.WriteLine(cell.Value);
+                        }
                     }
                 }
             }
@@ -143,21 +170,20 @@ namespace shopifyNonSeasonalFormatter
             color_variant,
             extraTags
         }
-        // TODO: user will check a box if there are variants of color or size, if yes, then set the variants bool to yes
+        //NEXT:: maybe put the part of the switch statement taht checks if the slot was already used in the column array, move it to the colmancreator method
+        //
+        //
+        //
+        //
+        //
+        //  
+        //  user will check a box if there are variants of color or size, if yes, then set the variants bool to yes
         // ,and prompts if it's color varuants or size variants and then proceed to use what's in
         // the color column, (if they choos yes, then that column must not be empty) same for size
         //
         //
-        //
         // instead of having the system delete extra columns and have all the formulas, just concantonate any values together from any
-        // "taggable" column object
-        //
-        //
-        // make a method for the popupbox error display that takes 2 strings and dipslays them in the box and boxheader, then just call the method for
-        // cleaner code actually, that's what it is already
-        //
-        // can actually already code in the methods for popup boxes etc, just fill in the method later,
-        // then you dont need to comb throuugh to find where you need to drop messagebox code blocks
+        // "taggable" column object  (just have the system know which ones are taggable) duh
         //
         //
         // maybe better to have the program do all the chesboning of sizes and new products insteasd of the the formulas
@@ -171,7 +197,5 @@ namespace shopifyNonSeasonalFormatter
         //
         // If price column is empty, set it as zero, matrixifty doesnt allow price of 0
         //
-        //
-        // .
     }
 }
