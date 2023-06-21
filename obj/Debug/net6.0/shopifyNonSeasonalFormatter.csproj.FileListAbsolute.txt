@@ -44,3 +44,6 @@ C:\Users\User\Desktop\Sync\dovid hodes\coding\shopifyNonSeasonalFormatter\obj\De
 C:\Users\User\Desktop\Sync\dovid hodes\coding\shopifyNonSeasonalFormatter\obj\Debug\net6.0\shopifyNonSeasonalFormatter.pdb
 C:\Users\User\Desktop\Sync\dovid hodes\coding\shopifyNonSeasonalFormatter\obj\Debug\net6.0\shopifyNonSeasonalFormatter.genruntimeconfig.cache
 C:\Users\User\Desktop\Sync\dovid hodes\coding\shopifyNonSeasonalFormatter\obj\Debug\net6.0\ref\shopifyNonSeasonalFormatter.dll
+C:\Users\User\Sync\dovid hodes\coding\shopifyNonSeasonalFormatter\obj\Debug\net6.0\shopifyNonSeasonalFormatter.dll
+C:\Users\User\Sync\dovid hodes\coding\shopifyNonSeasonalFormatter\obj\Debug\net6.0\refint\shopifyNonSeasonalFormatter.dll
+C:\Users\User\Sync\dovid hodes\coding\shopifyNonSeasonalFormatter\obj\Debug\net6.0\shopifyNonSeasonalFormatter.pdb
