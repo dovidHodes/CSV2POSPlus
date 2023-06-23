@@ -8,7 +8,7 @@ namespace shopifyNonSeasonalFormatter
         static IXLWorksheet? sourceWorksheet;
         static int lastRow;
         static int lastColumn;
-        static column[] columns = new column[11];
+        static Column[] columnArrayFromSourceSheet = new Column[11];
         static bool needStoneEdgeSpreadsheet = true;
         static bool needShopifySpreadsheet = true;
         static void Main(string[] args)
@@ -17,14 +17,15 @@ namespace shopifyNonSeasonalFormatter
 
             if(needStoneEdgeSpreadsheet)
             {
-                createStoneEdgeSpreadsheet();
+                XLWorkbook wb = stoneEdgeWorkbook.CreateOrGetTheOneStoneEdgeWorkbookInstance();
+                wb.ThisWorksheet.Cell
             }
             if(needShopifySpreadsheet)
             {
                 createShopifySpreadsheet();
             }
 
-            foreach (column column in columns)
+            foreach (Column column in columnArrayFromSourceSheet)
             {
                 if (column != null)
                 {
@@ -41,13 +42,13 @@ namespace shopifyNonSeasonalFormatter
         }
 
 
-        static column createNewColumnObject(string columnName, int columnNUmber)
+        static Column createNewColumnObject(string columnName, int columnNUmber)
         {
             //
             // Makes the range with the (row, column, row, column) overload
             //
             IXLRange rows = sourceWorksheet.Range(2, columnNUmber, lastRow, columnNUmber);
-            column newColumn = new column(columnName, rows);
+            Column newColumn = new Column(columnName, rows);
 
             return newColumn;
         }
@@ -62,6 +63,7 @@ namespace shopifyNonSeasonalFormatter
         }
 
         static void importDataFromSourceFile()
+
         //
         // gets the columns from the sheet and if they're not empty gets the contents of each column and
         // puts the range into the right slot in the column array, by putting it into the slot of that enum number
@@ -82,10 +84,10 @@ namespace shopifyNonSeasonalFormatter
                         {
                             case "sku":
                                 //first makes sure there is no other column with that header name that was already put into a slot
-                                if (columns[(int)columnHeader.sku] == null)
+                                if (columnArrayFromSourceSheet[(int)columnHeader.sku] == null)
                                 {
                                     //puts it in
-                                    columns[(int)columnHeader.sku] = createNewColumnObject(columnName, columnNumber);
+                                    columnArrayFromSourceSheet[(int)columnHeader.sku] = createNewColumnObject(columnName, columnNumber);
                                 }
                                 else
                                 {
@@ -94,56 +96,56 @@ namespace shopifyNonSeasonalFormatter
                                 break;
 
                             case "item name" or "name":
-                                if (columns[(int)columnHeader.itemName] == null)
-                                { columns[(int)columnHeader.itemName] = createNewColumnObject(columnName, columnNumber); }
+                                if (columnArrayFromSourceSheet[(int)columnHeader.itemName] == null)
+                                { columnArrayFromSourceSheet[(int)columnHeader.itemName] = createNewColumnObject(columnName, columnNumber); }
                                 else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
                                 break;
 
                             case "size":
-                                if (columns[(int)columnHeader.size] == null)
-                                { columns[(int)columnHeader.size] = createNewColumnObject(columnName, columnNumber); }
+                                if (columnArrayFromSourceSheet[(int)columnHeader.size] == null)
+                                { columnArrayFromSourceSheet[(int)columnHeader.size] = createNewColumnObject(columnName, columnNumber); }
                                 else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
                                 break;
 
                             case "barcode":
-                                if (columns[(int)columnHeader.barcode] == null)
-                                { columns[(int)columnHeader.barcode] = createNewColumnObject(columnName, columnNumber); }
+                                if (columnArrayFromSourceSheet[(int)columnHeader.barcode] == null)
+                                { columnArrayFromSourceSheet[(int)columnHeader.barcode] = createNewColumnObject(columnName, columnNumber); }
                                 else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
                                 break;
 
                             case "price":
-                                if (columns[(int)columnHeader.price] == null)
-                                { columns[(int)columnHeader.price] = createNewColumnObject(columnName, columnNumber); }
+                                if (columnArrayFromSourceSheet[(int)columnHeader.price] == null)
+                                { columnArrayFromSourceSheet[(int)columnHeader.price] = createNewColumnObject(columnName, columnNumber); }
                                 else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
                                 break;
 
                             case "supplier" or "supplier name" or "supplierName":
-                                if (columns[(int)columnHeader.supplierName] == null)
-                                { columns[(int)columnHeader.supplierName] = createNewColumnObject(columnName, columnNumber); }
+                                if (columnArrayFromSourceSheet[(int)columnHeader.supplierName] == null)
+                                { columnArrayFromSourceSheet[(int)columnHeader.supplierName] = createNewColumnObject(columnName, columnNumber); }
                                 else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
                                 break;
 
                             case "gender":
-                                if (columns[(int)columnHeader.gender] == null)
-                                { columns[(int)columnHeader.gender] = createNewColumnObject(columnName, columnNumber); }
+                                if (columnArrayFromSourceSheet[(int)columnHeader.gender] == null)
+                                { columnArrayFromSourceSheet[(int)columnHeader.gender] = createNewColumnObject(columnName, columnNumber); }
                                 else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
                                 break;
 
                             case "color_metafield" or "color metafield":
-                                if (columns[(int)columnHeader.color_metafield] == null)
-                                { columns[(int)columnHeader.color_metafield] = createNewColumnObject(columnName, columnNumber); }
+                                if (columnArrayFromSourceSheet[(int)columnHeader.color_metafield] == null)
+                                { columnArrayFromSourceSheet[(int)columnHeader.color_metafield] = createNewColumnObject(columnName, columnNumber); }
                                 else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
                                 break;
 
                             case "color_variant":
-                                if (columns[(int)columnHeader.color_variant] == null)
-                                { columns[(int)columnHeader.color_variant] = createNewColumnObject(columnName, columnNumber); }
+                                if (columnArrayFromSourceSheet[(int)columnHeader.color_variant] == null)
+                                { columnArrayFromSourceSheet[(int)columnHeader.color_variant] = createNewColumnObject(columnName, columnNumber); }
                                 else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
                                 break;
 
                             case "extraTags" or "extra tags":
-                                if (columns[(int)columnHeader.extraTags] == null)
-                                { columns[(int)columnHeader.extraTags] = createNewColumnObject(columnName, columnNumber); }
+                                if (columnArrayFromSourceSheet[(int)columnHeader.extraTags] == null)
+                                { columnArrayFromSourceSheet[(int)columnHeader.extraTags] = createNewColumnObject(columnName, columnNumber); }
                                 else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
                                 break;
                             default:
@@ -160,10 +162,9 @@ namespace shopifyNonSeasonalFormatter
         }
         static XLWorkbook createStoneEdgeSpreadsheet()
         {
-            XLWorkbook wb = new XLWorkbook();
-            IXLWorksheet worksheet = wb.Worksheets.Add();
-            worksheet.Cell(1, 1).Value = "SKU";
-            return wb;
+            
+            
+            return stoneEdgeWorkbook;
         }
         static XLWorkbook createShopifySpreadsheet()
         {
@@ -171,14 +172,17 @@ namespace shopifyNonSeasonalFormatter
 
             return wb;
         }
+        static void addStoneEdgeColumnHeaders(XLWorkbook addStoneEdgeHeadersToThisWorkBook)
+        {
 
+        }
     }
-    public class column
+    public class Column
     {
         public string columnName;
         public IXLRange rows;
 
-        public column(string columnName, IXLRange rows)
+        public Column(string columnName, IXLRange rows)
         {
             this.rows = rows;
             this.columnName = columnName;
