@@ -1,51 +1,56 @@
 ﻿using System;
 using ClosedXML.Excel;
 
-
-//added:  
+//added:
 namespace shopifyNonSeasonalFormatter
 {
     internal class Program
     {
-        //static string sourceFilePath = @"C:\Users\User\Desktop\test.xlsx";
-        static string sourceFilePath = @"/Users/work/Desktop/test.xlsx";
         static IXLWorksheet? sourceWorksheet;
         static int lastRow;
         static int lastColumn;
         static Column[] columnArrayFromSourceSheet = new Column[15];
+        static string saveFilepath = @"/Users/work/Desktop/";
+        static bool setAsDraftOnShopify = false;
+
         static bool needStoneEdgeSpreadsheet = true;
         static bool needShopifySpreadsheet = true;
+        //static string sourceFilePath = @"C:\Users\User\Desktop\test.xlsx";
+        static string sourceFilePath = @"/Users/work/Desktop/test.xlsx";
 
         static void Main(string[] args)
         {
-            ImportDataFromSourceFile();
+            ImportDataFromSourceFile(out bool requiredDataPresent);
 
-            if (needStoneEdgeSpreadsheet)
+            if (requiredDataPresent)
             {
-                XLWorkbook stoneEdgeWorkbook = new XLWorkbook();
-                IXLWorksheet stoneEdgeWorksheet = stoneEdgeWorkbook.AddWorksheet();
+                if (needStoneEdgeSpreadsheet)
+                {
+                    XLWorkbook stoneEdgeWorkbook = new XLWorkbook();
+                    IXLWorksheet stoneEdgeWorksheet = stoneEdgeWorkbook.AddWorksheet();
+                    FillInStoneEdgeColumnHeaders(stoneEdgeWorksheet);
+                    PasteRangeToLocation("SKU", ColumnHeadersEnum.sku, stoneEdgeWorksheet, 2, 1);
+                    AddStoneEdgeItem_Name(stoneEdgeWorksheet);
+                    PasteRangeToLocation("Supplier SKU", ColumnHeadersEnum.supplier_SKU, stoneEdgeWorksheet, 2, 3);
+                    PasteRangeToLocation("Barcode", ColumnHeadersEnum.barcode, stoneEdgeWorksheet, 2, 4);
+                    PasteRangeToLocation("Cost", ColumnHeadersEnum.cost, stoneEdgeWorksheet, 2, 5);
+                    PasteRangeToLocation("Price", ColumnHeadersEnum.price, stoneEdgeWorksheet, 2, 6);
+                    PasteRangeToLocation("Taxable", ColumnHeadersEnum.taxable, stoneEdgeWorksheet, 2, 7);
+                    PasteRangeToLocation("QOH", ColumnHeadersEnum.QOH, stoneEdgeWorksheet, 2, 8);
 
-                FillInStoneEdgeColumnHeaders(stoneEdgeWorksheet);
-
-                PasteRangeToLocation("SKU", ColumnHeadersEnum.sku, stoneEdgeWorksheet, 2, 1);
-
-                AddStoneEdgeItem_Name(stoneEdgeWorksheet);
-
-                PasteRangeToLocation("Supplier SKU", ColumnHeadersEnum.supplier_SKU, stoneEdgeWorksheet, 2, 3);
-                PasteRangeToLocation("Barcode",      ColumnHeadersEnum.barcode, stoneEdgeWorksheet, 2, 4);                
-                PasteRangeToLocation("Cost",         ColumnHeadersEnum.cost, stoneEdgeWorksheet, 2, 5);
-                PasteRangeToLocation("Price",        ColumnHeadersEnum.price, stoneEdgeWorksheet, 2, 6);
-                PasteRangeToLocation("Taxable", ColumnHeadersEnum.taxable, stoneEdgeWorksheet, 2, 7);
-                PasteRangeToLocation("Price", ColumnHeadersEnum.QOH, stoneEdgeWorksheet, 2, 8);
-
-                PrintSpreadsheet(stoneEdgeWorksheet);
-
-                Console.ReadLine();
-
+                    PrintSpreadsheet(stoneEdgeWorksheet);
+                    SaveFileAs(stoneEdgeWorkbook, "Stone Edge Sheet", true);
+                }
+                if (needShopifySpreadsheet)
+                {
+                    XLWorkbook shopifyWorkbook = new XLWorkbook();
+                    IXLWorksheet shopifyWorksheet = shopifyWorkbook.AddWorksheet();
+                    FillInShopifyColumnHeaders(shopifyWorksheet);
+                }
             }
-            if (needShopifySpreadsheet)
+            else
             {
-
+                showAlert("required data was not present", "no changes were made");
             }
         }
 
@@ -57,15 +62,33 @@ namespace shopifyNonSeasonalFormatter
         {
 
         }
-        static Column createNewColumnObject(string columnName, int columnNUmber)
+        static bool createNewColumnObject(ColumnHeadersEnum columnEnum, bool isRequired, string columnName, int columnNUmber)
         {
-            //
-            // Makes the range with the (row, column, row, column) overload
-            //
-            IXLRange rows = sourceWorksheet.Range(2, columnNUmber, lastRow, columnNUmber);
-            Column newColumn = new Column(columnName, rows);
-
-            return newColumn;
+            //checks if the slot is already used
+            if (columnArrayFromSourceSheet[(int)columnEnum] == null)
+            {
+                if (isRequired)
+                {
+                    //then for required columns, checks to make sure that all cells are not empty
+                    for (int row = 2; row <= lastRow; row++)
+                    {
+                        if (sourceWorksheet.Cell(row, columnNUmber).IsEmpty())
+                        {
+                            showAlert("missing value from required column", $"Row {row} for {columnName} column is empty");
+                            return false;
+                        }
+                    }
+                }
+                // Makes the range with the (row, column, row, column) overload, and adds the column to the array
+                IXLRange rows = sourceWorksheet.Range(2, columnNUmber, lastRow, columnNUmber);
+                columnArrayFromSourceSheet[(int)columnEnum] = new Column(columnName, rows);
+            }
+            else
+            {
+                showAlert("Column Exists", $"there is already a column with name: {columnName}");
+            }
+            //if all required data is present
+            return true;
         }
         static void showAlert(string bigMessage, string smallMessage)
         {
@@ -75,8 +98,9 @@ namespace shopifyNonSeasonalFormatter
             Console.WriteLine();
             Console.ReadLine();
         }
-        static void ImportDataFromSourceFile()
+        static void ImportDataFromSourceFile(out bool requiredDataPresent)
         {
+            requiredDataPresent = true;
             //
             // gets the columns from the sheet and if they're not empty gets the contents of each column and
             // puts the range into the right slot in the column array, by putting it into the slot of that enum number
@@ -94,114 +118,59 @@ namespace shopifyNonSeasonalFormatter
                     switch (columnName.ToLower())
                     {
                         case "sku":
-                            //first makes sure there is no other column with that header name that was already put into a slot
-                            if (columnArrayFromSourceSheet[(int)ColumnHeadersEnum.sku] == null)
-                            {
-                                //then for sku column, checks to make sure that all cells are not empty
-                                for (int row = 2; row <= lastRow; row++)
-                                {
-                                    if (sourceWorksheet.Cell(row, columnNumber).IsEmpty())
-                                    {
-                                        showAlert("missing value from required column", $"Row {row} for SKU column is empty");
-                                    }
-                                }
-                                //puts it in
-                                columnArrayFromSourceSheet[(int)ColumnHeadersEnum.sku] = createNewColumnObject(columnName, columnNumber);
-                            }
-                            else
-                            {
-                                showAlert("Column Exists", $"there is already a column with name: {columnName}");
-                            }
+                            requiredDataPresent = createNewColumnObject(ColumnHeadersEnum.sku, true, columnName, columnNumber);                        
                             break;
 
                         case "item name" or "name":
-                            if (columnArrayFromSourceSheet[(int)ColumnHeadersEnum.itemName] == null)
-                            {
-                                for (int row = 2; row <= lastRow; row++)
-                                {
-                                    if (sourceWorksheet.Cell(row, columnNumber).IsEmpty())
-                                    {
-                                        showAlert("missing value from required column", $"Row {row} for Item Name column is empty");
-                                    }
-                                }
-                                columnArrayFromSourceSheet[(int)ColumnHeadersEnum.itemName] = createNewColumnObject(columnName, columnNumber);
-                            }
-                            else
-                            {
-                                showAlert("Column Exists", $"there is already a column with name: {columnName}");
-                            }
+                            requiredDataPresent = createNewColumnObject(ColumnHeadersEnum.itemName, true, columnName, columnNumber);
                             break;
 
                         case "supplier sku":
-                            if (columnArrayFromSourceSheet[(int)ColumnHeadersEnum.supplier_SKU] == null)
-                            { columnArrayFromSourceSheet[(int)ColumnHeadersEnum.supplier_SKU] = createNewColumnObject(columnName, columnNumber); }
-                            else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
+                            requiredDataPresent = createNewColumnObject(ColumnHeadersEnum.supplier_SKU, false, columnName, columnNumber);
                             break;
 
                         case "size":
-                            if (columnArrayFromSourceSheet[(int)ColumnHeadersEnum.size] == null)
-                            { columnArrayFromSourceSheet[(int)ColumnHeadersEnum.size] = createNewColumnObject(columnName, columnNumber); }
-                            else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
+                            requiredDataPresent = createNewColumnObject(ColumnHeadersEnum.size, false, columnName, columnNumber);
                             break;
 
                         case "barcode":
-                            if (columnArrayFromSourceSheet[(int)ColumnHeadersEnum.barcode] == null)
-                            { columnArrayFromSourceSheet[(int)ColumnHeadersEnum.barcode] = createNewColumnObject(columnName, columnNumber); }
-                            else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
+                            requiredDataPresent = createNewColumnObject(ColumnHeadersEnum.barcode, false, columnName, columnNumber);
                             break;
 
                         case "price":
-                            if (columnArrayFromSourceSheet[(int)ColumnHeadersEnum.price] == null)
-                            { columnArrayFromSourceSheet[(int)ColumnHeadersEnum.price] = createNewColumnObject(columnName, columnNumber); }
-                            else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
+                            requiredDataPresent = createNewColumnObject(ColumnHeadersEnum.price, false, columnName, columnNumber);
                             break;
 
                         case "taxable":
-                            if (columnArrayFromSourceSheet[(int)ColumnHeadersEnum.taxable] == null)
-                            { columnArrayFromSourceSheet[(int)ColumnHeadersEnum.taxable] = createNewColumnObject(columnName, columnNumber); }
-                            else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
+                            requiredDataPresent = createNewColumnObject(ColumnHeadersEnum.taxable, false, columnName, columnNumber);
                             break;
 
                         case "cost":
-                            if (columnArrayFromSourceSheet[(int)ColumnHeadersEnum.cost] == null)
-                            { columnArrayFromSourceSheet[(int)ColumnHeadersEnum.cost] = createNewColumnObject(columnName, columnNumber); }
-                            else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
+                            requiredDataPresent = createNewColumnObject(ColumnHeadersEnum.cost, false, columnName, columnNumber);
                             break;
 
                         case "qoh" or "quantity":
-                            if (columnArrayFromSourceSheet[(int)ColumnHeadersEnum.QOH] == null)
-                            { columnArrayFromSourceSheet[(int)ColumnHeadersEnum.QOH] = createNewColumnObject(columnName, columnNumber); }
-                            else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
+                            requiredDataPresent = createNewColumnObject(ColumnHeadersEnum.QOH, false, columnName, columnNumber);
                             break;
 
                         case "supplier" or "supplier name" or "supplierName":
-                            if (columnArrayFromSourceSheet[(int)ColumnHeadersEnum.supplierName] == null)
-                            { columnArrayFromSourceSheet[(int)ColumnHeadersEnum.supplierName] = createNewColumnObject(columnName, columnNumber); }
-                            else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
+                            requiredDataPresent = createNewColumnObject(ColumnHeadersEnum.supplierName, true, columnName, columnNumber);
                             break;
 
                         case "gender":
-                            if (columnArrayFromSourceSheet[(int)ColumnHeadersEnum.gender] == null)
-                            { columnArrayFromSourceSheet[(int)ColumnHeadersEnum.gender] = createNewColumnObject(columnName, columnNumber); }
-                            else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
+                            requiredDataPresent = createNewColumnObject(ColumnHeadersEnum.gender, false, columnName, columnNumber);
                             break;
 
                         case "color_metafield" or "color metafield":
-                            if (columnArrayFromSourceSheet[(int)ColumnHeadersEnum.color_metafield] == null)
-                            { columnArrayFromSourceSheet[(int)ColumnHeadersEnum.color_metafield] = createNewColumnObject(columnName, columnNumber); }
-                            else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
+                            requiredDataPresent = createNewColumnObject(ColumnHeadersEnum.color_metafield, false, columnName, columnNumber);
                             break;
 
                         case "color_variant":
-                            if (columnArrayFromSourceSheet[(int)ColumnHeadersEnum.color_variant] == null)
-                            { columnArrayFromSourceSheet[(int)ColumnHeadersEnum.color_variant] = createNewColumnObject(columnName, columnNumber); }
-                            else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
+                            requiredDataPresent = createNewColumnObject(ColumnHeadersEnum.color_variant, false, columnName, columnNumber);
                             break;
 
                         case "extraTags" or "extra tags":
-                            if (columnArrayFromSourceSheet[(int)ColumnHeadersEnum.extraTags] == null)
-                            { columnArrayFromSourceSheet[(int)ColumnHeadersEnum.extraTags] = createNewColumnObject(columnName, columnNumber); }
-                            else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
+                            requiredDataPresent = createNewColumnObject(ColumnHeadersEnum.extraTags, false, columnName, columnNumber);
                             break;
                         default:
                             showAlert("Column Name Not Recognized", "no option for column: " + columnName);
@@ -211,6 +180,21 @@ namespace shopifyNonSeasonalFormatter
                 else
                 {
                     showAlert($"column {columnNumber} column header is empty", "");
+                    requiredDataPresent = false;
+                    break;
+                }              
+            }
+            if (requiredDataPresent)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    if (columnArrayFromSourceSheet[i] == null)
+                    {
+                        string missingField = i == 0 ? "SKU" : i == 1 ? "Item Name" : "Supplier Name";
+                        showAlert("missing required column from spreadsheet", $"missing column {missingField.ToUpper()}, which is a neccessary field");
+                        requiredDataPresent = false;
+                        break;
+                    }
                 }
             }
         }
@@ -234,21 +218,24 @@ namespace shopifyNonSeasonalFormatter
         }
         static void AddStoneEdgeItem_Name(IXLWorksheet stoneEdgeWorkSheet)
         {
+            //gets the values from the title and supplier name columns to concat. and set as value for title column
+            IXLRangeColumn supplierNameColumn = columnArrayFromSourceSheet[(int)ColumnHeadersEnum.supplierName].rows.Column(1);
+            IXLRangeColumn titleColumn = columnArrayFromSourceSheet[(int)ColumnHeadersEnum.itemName].rows.Column(1);
+            for (int row = 1; row <= lastRow; row++)
+            {
+                stoneEdgeWorkSheet.Cell(row + 1, 2).Value = supplierNameColumn.Cell(row).Value + " " + titleColumn.Cell(row).Value;
+            }
+            //checks if there are color or size variants
             bool hasColorVariants = columnArrayFromSourceSheet[(int)ColumnHeadersEnum.color_variant] != null;
             bool hasSizeVariants = columnArrayFromSourceSheet[(int)ColumnHeadersEnum.size] != null;
-
             if (hasColorVariants || hasSizeVariants)
             {
-                //gets the column info for the title column and variant columns,
+                //gets the column info for the variant columns,
                 //the null conditional operator only assigns the value if the column object isnt null to avoid null reference exeptions
-                IXLRangeColumn titleColumn = columnArrayFromSourceSheet[(int)ColumnHeadersEnum.itemName].rows.Column(1);
                 IXLRangeColumn colorColumn = columnArrayFromSourceSheet[(int)ColumnHeadersEnum.color_variant]?.rows.Column(1);
                 IXLRangeColumn sizeColumn = columnArrayFromSourceSheet[(int)ColumnHeadersEnum.size]?.rows.Column(1);
-
                 for (int row = 1; row <= lastRow; row++)
                 {
-                    //sets the value for the item mame column
-                    stoneEdgeWorkSheet.Cell(row + 1, 2).Value = titleColumn.Cell(row).Value;
                     if (hasColorVariants)
                     {
                         //appends color variant to end of name
@@ -261,11 +248,6 @@ namespace shopifyNonSeasonalFormatter
                     }
                 }
             }
-            else
-            {
-                PasteRangeToLocation("Title", ColumnHeadersEnum.itemName, stoneEdgeWorkSheet, 2, 2);
-            }
-
         }
         static void PrintSpreadsheet(IXLWorksheet worksheetToPrint)
         {
@@ -290,6 +272,30 @@ namespace shopifyNonSeasonalFormatter
             }
             Console.Write("------------------------------------------------------------------------------------------------------------------------------------------------");
         }
+        static void SaveFileAs(XLWorkbook workbookToSave, string fileName, bool isCSV)
+        {
+            string filePath = Path.Combine(saveFilepath, fileName + ".xlsx");
+            workbookToSave.SaveAs(filePath);
+            if (!isCSV)
+            {
+                showAlert("file saved", "Shopify file successfully saved");
+            }
+            else
+            {
+                File.Move(filePath, Path.ChangeExtension(filePath, ".csv"));
+                showAlert("file saved", "SE file successfully saved as CSV");
+            }
+        }
+        static void FillInShopifyColumnHeaders(IXLWorksheet shopifyWorksheet)
+        {
+            string[] ShopifyEdgeColumnHeaderNames = new string[] {"Handle", "Variant SKU", "Title", "Variant Barcode", "Variant Cost", "Variant Price", "Vendor", "Type", "Metafield: custom.gender [single_line_text_field]", "Metafield: custom.color [single_line_text_field]", "Tags", "Option 1 Name", "Option 1 Value", "Body HTML", "Image Src", "Image Command", "Image Position", "Image Alt Text", "Tags Command", "Status", "Published", "Published Scope", "Gift Card", "Variant Weight", "Variant Weight Unit", "Variant Requires Shipping", "Variant Taxable", "Variant Inventory Tracker", "Variant Inventory Policy", "Variant Fulfillment Service" };
+            for (int row = 1, column = 1; column <= ShopifyEdgeColumnHeaderNames.Length; column++)
+            {
+                feedUILabel($"Filling in Shopify Header: {ShopifyEdgeColumnHeaderNames[column - 1]}");
+                shopifyWorksheet.Cell(row, column).Value = ShopifyEdgeColumnHeaderNames[column - 1];
+            }
+        }
+
     }
     public class Column
     {
@@ -306,6 +312,7 @@ namespace shopifyNonSeasonalFormatter
     {
         sku,
         itemName,
+        supplierName,
         supplier_SKU,
         size,
         barcode,
@@ -313,28 +320,15 @@ namespace shopifyNonSeasonalFormatter
         cost,
         QOH,
         taxable,
-        supplierName,
         productType,
         gender,
         color_metafield,
         color_variant,
         extraTags
     }
-    //NEXT:: maybe put the part of the switch statement taht checks if the slot was already used in the column array, move it to the colmancreator method
+    // rearrange the order of strings im shopify column header array, to order by importance
     //
-    //NEXT: put in a validator that makes sure the neccesary columns exist (name, sku) and a warning for columns that are missing
-    //
-    //
-    //
-    //  
-    //  user will check a box if there are variants of color or size, if yes, then set the variants bool to yes
-    // ,and prompts if it's color varuants or size variants and then proceed to use what's in
-    // the color column, (if they choos yes, then that column must not be empty) same for size
-    //
-    //
-    // instead of having the system delete extra columns and have all the formulas, just concantonate any values together from any
-    // "taggable" column object  (just have the system know which ones are taggable) duh
-    //
+    // add a bool to set the shopify products as draft
     //
     // maybe better to have the program do all the chesboning of sizes and new products insteasd of the the formulas
     // so if there is a size column it will read each cell in title and do, if same as previous then do size column info etc, and if no size column, 
