@@ -1,16 +1,18 @@
 ﻿using System;
 using ClosedXML.Excel;
 
+
+//added:  
 namespace shopifyNonSeasonalFormatter
 {
     internal class Program
     {
-        static string sourceFilePath = @"C:\Users\User\Desktop\test.xlsx";
-        //static string sourceFilePath = @"/Users/work/Desktop/test.xlsx";
+        //static string sourceFilePath = @"C:\Users\User\Desktop\test.xlsx";
+        static string sourceFilePath = @"/Users/work/Desktop/test.xlsx";
         static IXLWorksheet? sourceWorksheet;
         static int lastRow;
         static int lastColumn;
-        static Column[] columnArrayFromSourceSheet = new Column[11];
+        static Column[] columnArrayFromSourceSheet = new Column[15];
         static bool needStoneEdgeSpreadsheet = true;
         static bool needShopifySpreadsheet = true;
 
@@ -25,9 +27,16 @@ namespace shopifyNonSeasonalFormatter
 
                 FillInStoneEdgeColumnHeaders(stoneEdgeWorksheet);
 
-                PasteRangeToLocation(columnArrayFromSourceSheet[(int)ColumnHeadersEnum.sku].rows, stoneEdgeWorksheet, 2, 1);
+                PasteRangeToLocation("SKU", ColumnHeadersEnum.sku, stoneEdgeWorksheet, 2, 1);
 
                 AddStoneEdgeItem_Name(stoneEdgeWorksheet);
+
+                PasteRangeToLocation("Supplier SKU", ColumnHeadersEnum.supplier_SKU, stoneEdgeWorksheet, 2, 3);
+                PasteRangeToLocation("Barcode",      ColumnHeadersEnum.barcode, stoneEdgeWorksheet, 2, 4);                
+                PasteRangeToLocation("Cost",         ColumnHeadersEnum.cost, stoneEdgeWorksheet, 2, 5);
+                PasteRangeToLocation("Price",        ColumnHeadersEnum.price, stoneEdgeWorksheet, 2, 6);
+                PasteRangeToLocation("Taxable", ColumnHeadersEnum.taxable, stoneEdgeWorksheet, 2, 7);
+                PasteRangeToLocation("Price", ColumnHeadersEnum.QOH, stoneEdgeWorksheet, 2, 8);
 
                 PrintSpreadsheet(stoneEdgeWorksheet);
 
@@ -38,24 +47,16 @@ namespace shopifyNonSeasonalFormatter
             {
 
             }
-
-            foreach (Column column in columnArrayFromSourceSheet)
-            {
-                if (column != null)
-                {
-                    Console.WriteLine();
-                    Console.WriteLine();
-                    Console.WriteLine(column.columnName.ToUpper());
-                    Console.WriteLine();
-                    foreach (IXLCell cell in column.rows.Cells())
-                    {
-                        Console.WriteLine(cell.Value);
-                    }
-                }
-            }
         }
 
+        static bool ColumnHasData(ColumnHeadersEnum columnName)
+        {
+            return columnArrayFromSourceSheet[(int)columnName] != null;
+        }
+        static void feedUILabel(string message)
+        {
 
+        }
         static Column createNewColumnObject(string columnName, int columnNUmber)
         {
             //
@@ -69,8 +70,8 @@ namespace shopifyNonSeasonalFormatter
         static void showAlert(string bigMessage, string smallMessage)
         {
             Console.WriteLine();
-            Console.WriteLine(smallMessage);
-            Console.WriteLine(bigMessage);
+            Console.WriteLine(bigMessage.ToUpper());
+            Console.WriteLine(smallMessage);       
             Console.WriteLine();
             Console.ReadLine();
         }
@@ -96,6 +97,14 @@ namespace shopifyNonSeasonalFormatter
                             //first makes sure there is no other column with that header name that was already put into a slot
                             if (columnArrayFromSourceSheet[(int)ColumnHeadersEnum.sku] == null)
                             {
+                                //then for sku column, checks to make sure that all cells are not empty
+                                for (int row = 2; row <= lastRow; row++)
+                                {
+                                    if (sourceWorksheet.Cell(row, columnNumber).IsEmpty())
+                                    {
+                                        showAlert("missing value from required column", $"Row {row} for SKU column is empty");
+                                    }
+                                }
                                 //puts it in
                                 columnArrayFromSourceSheet[(int)ColumnHeadersEnum.sku] = createNewColumnObject(columnName, columnNumber);
                             }
@@ -107,7 +116,25 @@ namespace shopifyNonSeasonalFormatter
 
                         case "item name" or "name":
                             if (columnArrayFromSourceSheet[(int)ColumnHeadersEnum.itemName] == null)
-                            { columnArrayFromSourceSheet[(int)ColumnHeadersEnum.itemName] = createNewColumnObject(columnName, columnNumber); }
+                            {
+                                for (int row = 2; row <= lastRow; row++)
+                                {
+                                    if (sourceWorksheet.Cell(row, columnNumber).IsEmpty())
+                                    {
+                                        showAlert("missing value from required column", $"Row {row} for Item Name column is empty");
+                                    }
+                                }
+                                columnArrayFromSourceSheet[(int)ColumnHeadersEnum.itemName] = createNewColumnObject(columnName, columnNumber);
+                            }
+                            else
+                            {
+                                showAlert("Column Exists", $"there is already a column with name: {columnName}");
+                            }
+                            break;
+
+                        case "supplier sku":
+                            if (columnArrayFromSourceSheet[(int)ColumnHeadersEnum.supplier_SKU] == null)
+                            { columnArrayFromSourceSheet[(int)ColumnHeadersEnum.supplier_SKU] = createNewColumnObject(columnName, columnNumber); }
                             else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
                             break;
 
@@ -126,6 +153,24 @@ namespace shopifyNonSeasonalFormatter
                         case "price":
                             if (columnArrayFromSourceSheet[(int)ColumnHeadersEnum.price] == null)
                             { columnArrayFromSourceSheet[(int)ColumnHeadersEnum.price] = createNewColumnObject(columnName, columnNumber); }
+                            else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
+                            break;
+
+                        case "taxable":
+                            if (columnArrayFromSourceSheet[(int)ColumnHeadersEnum.taxable] == null)
+                            { columnArrayFromSourceSheet[(int)ColumnHeadersEnum.taxable] = createNewColumnObject(columnName, columnNumber); }
+                            else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
+                            break;
+
+                        case "cost":
+                            if (columnArrayFromSourceSheet[(int)ColumnHeadersEnum.cost] == null)
+                            { columnArrayFromSourceSheet[(int)ColumnHeadersEnum.cost] = createNewColumnObject(columnName, columnNumber); }
+                            else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
+                            break;
+
+                        case "qoh" or "quantity":
+                            if (columnArrayFromSourceSheet[(int)ColumnHeadersEnum.QOH] == null)
+                            { columnArrayFromSourceSheet[(int)ColumnHeadersEnum.QOH] = createNewColumnObject(columnName, columnNumber); }
                             else { showAlert("Column Exists", $"there is already a column with name: {columnName}"); }
                             break;
 
@@ -165,7 +210,7 @@ namespace shopifyNonSeasonalFormatter
                 }
                 else
                 {
-                    showAlert($"column {columnNumber} is empty", "");
+                    showAlert($"column {columnNumber} column header is empty", "");
                 }
             }
         }
@@ -174,43 +219,57 @@ namespace shopifyNonSeasonalFormatter
             string[] stoneEdgeColumnHeaderNames = new string[] { "SKU", "Item Name", "Supplier Sku", "Barcode", "Cost", "price", "taxable", "QOH" };
             for (int row = 1, column = 1; column <= stoneEdgeColumnHeaderNames.Length; column++)
             {
+                feedUILabel($"Filling in Stone Edge Header: {stoneEdgeColumnHeaderNames[column - 1]}");
                 stoneEdgeWorksheet.Cell(row, column).Value = stoneEdgeColumnHeaderNames[column - 1];
             }
         }
-        static void PasteRangeToLocation(IXLRange data, IXLWorksheet destinationWorksheet, int row, int column)
+        static void PasteRangeToLocation(string rangeName, ColumnHeadersEnum columnEnum, IXLWorksheet destinationWorksheet, int destinationRow, int destinationColumn)
         {
-            data.CopyTo(destinationWorksheet.Cell(row, column));
+            if (ColumnHasData(columnEnum))
+            {
+                IXLRange data = columnArrayFromSourceSheet[(int)columnEnum].rows;
+                feedUILabel($"Pasting range to {rangeName}");
+                data.CopyTo(destinationWorksheet.Cell(destinationRow, destinationColumn));
+            }
         }
         static void AddStoneEdgeItem_Name(IXLWorksheet stoneEdgeWorkSheet)
         {
-            //if theres info in the size column
-            if (columnArrayFromSourceSheet[(int)ColumnHeadersEnum.size] != null)
+            bool hasColorVariants = columnArrayFromSourceSheet[(int)ColumnHeadersEnum.color_variant] != null;
+            bool hasSizeVariants = columnArrayFromSourceSheet[(int)ColumnHeadersEnum.size] != null;
+
+            if (hasColorVariants || hasSizeVariants)
             {
+                //gets the column info for the title column and variant columns,
+                //the null conditional operator only assigns the value if the column object isnt null to avoid null reference exeptions
                 IXLRangeColumn titleColumn = columnArrayFromSourceSheet[(int)ColumnHeadersEnum.itemName].rows.Column(1);
-                IXLRangeColumn sizeColumn = columnArrayFromSourceSheet[(int)ColumnHeadersEnum.size].rows.Column(1);
+                IXLRangeColumn colorColumn = columnArrayFromSourceSheet[(int)ColumnHeadersEnum.color_variant]?.rows.Column(1);
+                IXLRangeColumn sizeColumn = columnArrayFromSourceSheet[(int)ColumnHeadersEnum.size]?.rows.Column(1);
+
                 for (int row = 1; row <= lastRow; row++)
                 {
-                    stoneEdgeWorkSheet.Cell(row + 1, 2).Value = titleColumn.Cell(row).Value + " " + sizeColumn.Cell(row).Value;
+                    //sets the value for the item mame column
+                    stoneEdgeWorkSheet.Cell(row + 1, 2).Value = titleColumn.Cell(row).Value;
+                    if (hasColorVariants)
+                    {
+                        //appends color variant to end of name
+                        stoneEdgeWorkSheet.Cell(row + 1, 2).Value = stoneEdgeWorkSheet.Cell(row + 1, 2).Value + " " + colorColumn.Cell(row).Value;
+                    }
+                    if (hasSizeVariants)
+                    {
+                        //appends size variant to end of name
+                        stoneEdgeWorkSheet.Cell(row + 1, 2).Value = stoneEdgeWorkSheet.Cell(row + 1, 2).Value + " " + sizeColumn.Cell(row).Value;
+                    }
                 }
             }
-            // if theres info in the color variants column
-            else if (columnArrayFromSourceSheet[(int)ColumnHeadersEnum.color_variant] != null)
-            {
-                IXLRangeColumn titleColumn = columnArrayFromSourceSheet[(int)ColumnHeadersEnum.itemName].rows.Column(1);
-                IXLRangeColumn colorColumn = columnArrayFromSourceSheet[(int)ColumnHeadersEnum.color_variant].rows.Column(1);
-                for (int row = 1; row <= lastRow; row++)
-                {
-                    stoneEdgeWorkSheet.Cell(row + 1, 2).Value = titleColumn.Cell(row).Value + " " + colorColumn.Cell(row).Value;
-                }
-            }
-            //if there are no variants
             else
             {
-                PasteRangeToLocation(columnArrayFromSourceSheet[(int)ColumnHeadersEnum.itemName].rows, stoneEdgeWorkSheet, 2, 2);
+                PasteRangeToLocation("Title", ColumnHeadersEnum.itemName, stoneEdgeWorkSheet, 2, 2);
             }
+
         }
         static void PrintSpreadsheet(IXLWorksheet worksheetToPrint)
         {
+            Console.WriteLine("------------------------------------------------------------------------------------------------------------------------------------------------");
             for (int row = 1; row <= worksheetToPrint.LastRowUsed().RowNumber(); row++)
             {
                 for (int column = 1; column <= worksheetToPrint.LastColumnUsed().ColumnNumber(); column++)
@@ -220,10 +279,16 @@ namespace shopifyNonSeasonalFormatter
                     {
                         cellValue = cellValue.ToUpper();
                     }
-                    Console.Write($"{cellValue, -20}");
+                    Console.Write($"{cellValue,-20}");
+                }
+                Console.WriteLine();
+                if(row == 1)
+                {
+                    Console.Write("------------------------------------------------------------------------------------------------------------------------------------------------");
                 }
                 Console.WriteLine();
             }
+            Console.Write("------------------------------------------------------------------------------------------------------------------------------------------------");
         }
     }
     public class Column
@@ -241,9 +306,13 @@ namespace shopifyNonSeasonalFormatter
     {
         sku,
         itemName,
+        supplier_SKU,
         size,
         barcode,
         price,
+        cost,
+        QOH,
+        taxable,
         supplierName,
         productType,
         gender,
