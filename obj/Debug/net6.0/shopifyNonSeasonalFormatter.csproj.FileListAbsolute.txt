@@ -70,3 +70,26 @@ C:/Users/User/Sync/dovid hodes/coding/shopifyNonSeasonalFormatter/obj/Debug/net6
 /Users/work/Sync/DOVID HODES/coding/shopifyNonSeasonalFormatter/obj/Debug/net6.0/shopifyNonSeasonalFormatter.pdb
 /Users/work/Sync/DOVID HODES/coding/shopifyNonSeasonalFormatter/obj/Debug/net6.0/shopifyNonSeasonalFormatter.genruntimeconfig.cache
 /Users/work/Sync/DOVID HODES/coding/shopifyNonSeasonalFormatter/obj/Debug/net6.0/ref/shopifyNonSeasonalFormatter.dll
+/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/bin/Debug/net6.0/shopifyNonSeasonalFormatter
+/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/bin/Debug/net6.0/shopifyNonSeasonalFormatter.deps.json
+/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/bin/Debug/net6.0/shopifyNonSeasonalFormatter.runtimeconfig.json
+/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/bin/Debug/net6.0/shopifyNonSeasonalFormatter.dll
+/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/bin/Debug/net6.0/shopifyNonSeasonalFormatter.pdb
+/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/bin/Debug/net6.0/ClosedXML.dll
+/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/bin/Debug/net6.0/DocumentFormat.OpenXml.dll
+/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/bin/Debug/net6.0/ExcelNumberFormat.dll
+/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/bin/Debug/net6.0/Irony.dll
+/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/bin/Debug/net6.0/SixLabors.Fonts.dll
+/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/bin/Debug/net6.0/System.IO.Packaging.dll
+/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/bin/Debug/net6.0/XLParser.dll
+/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/obj/Debug/net6.0/shopifyNonSeasonalFormatter.csproj.AssemblyReference.cache
+/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/obj/Debug/net6.0/shopifyNonSeasonalFormatter.GeneratedMSBuildEditorConfig.editorconfig
+/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/obj/Debug/net6.0/shopifyNonSeasonalFormatter.AssemblyInfoInputs.cache
+/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/obj/Debug/net6.0/shopifyNonSeasonalFormatter.AssemblyInfo.cs
+/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/obj/Debug/net6.0/shopifyNonSeasonalFormatter.csproj.CoreCompileInputs.cache
+/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/obj/Debug/net6.0/shopifyNonSeasonalFormatter.csproj.CopyComplete
+/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/obj/Debug/net6.0/shopifyNonSeasonalFormatter.dll
+/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/obj/Debug/net6.0/refint/shopifyNonSeasonalFormatter.dll
+/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/obj/Debug/net6.0/shopifyNonSeasonalFormatter.pdb
+/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/obj/Debug/net6.0/shopifyNonSeasonalFormatter.genruntimeconfig.cache
+/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/obj/Debug/net6.0/ref/shopifyNonSeasonalFormatter.dll

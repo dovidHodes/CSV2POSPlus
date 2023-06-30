@@ -13,7 +13,7 @@ namespace shopifyNonSeasonalFormatter
         static string saveFilepath = @"/Users/work/Desktop/";
         static bool setAsDraftOnShopify = false;
 
-        static bool needStoneEdgeSpreadsheet = true;
+        static bool needStoneEdgeSpreadsheet = false;
         static bool needShopifySpreadsheet = true;
         //static string sourceFilePath = @"C:\Users\User\Desktop\test.xlsx";
         static string sourceFilePath = @"/Users/work/Desktop/test.xlsx";
@@ -46,6 +46,25 @@ namespace shopifyNonSeasonalFormatter
                     XLWorkbook shopifyWorkbook = new XLWorkbook();
                     IXLWorksheet shopifyWorksheet = shopifyWorkbook.AddWorksheet();
                     FillInShopifyColumnHeaders(shopifyWorksheet);
+                    bool hasColorVariants = columnArrayFromSourceSheet[(int)ColumnHeadersEnum.color_variant] != null;
+                    bool hasSizeVariants = columnArrayFromSourceSheet[(int)ColumnHeadersEnum.size] != null;
+                    bool hasVariants = hasSizeVariants || hasColorVariants;
+                    bool[] rowData = new bool[lastRow-1];
+                    if (hasVariants) {
+                        rowData = getRowVariantData(shopifyWorksheet);
+                    }
+                    PasteRangeToLocation("title shopify", ColumnHeadersEnum.itemName, shopifyWorksheet, 2, 4);
+                    for(int row = 2; row <= lastRow; row++) {
+                        shopifyWorksheet.Cell(row, 3).Value = rowData[row-2];
+                    }
+                    SaveFileAs(shopifyWorkbook, "SHOPIFY", false);
+                    if (hasSizeVariants)
+                    {
+
+                    }
+
+
+
                 }
             }
             else
@@ -288,12 +307,32 @@ namespace shopifyNonSeasonalFormatter
         }
         static void FillInShopifyColumnHeaders(IXLWorksheet shopifyWorksheet)
         {
-            string[] ShopifyEdgeColumnHeaderNames = new string[] {"Handle", "Variant SKU", "Title", "Variant Barcode", "Variant Cost", "Variant Price", "Vendor", "Type", "Metafield: custom.gender [single_line_text_field]", "Metafield: custom.color [single_line_text_field]", "Tags", "Option 1 Name", "Option 1 Value", "Body HTML", "Image Src", "Image Command", "Image Position", "Image Alt Text", "Tags Command", "Status", "Published", "Published Scope", "Gift Card", "Variant Weight", "Variant Weight Unit", "Variant Requires Shipping", "Variant Taxable", "Variant Inventory Tracker", "Variant Inventory Policy", "Variant Fulfillment Service" };
+            string[] ShopifyEdgeColumnHeaderNames = new string[] {"Handle", "Variant SKU", "Is New" ,"Title", "Option 1 Name", "Option 1 Value", "Variant Barcode", "Variant Cost", "Variant Price", "Vendor", "Type", "Metafield: custom.gender [single_line_text_field]", "Metafield: custom.color [single_line_text_field]", "Tags", "Body HTML", "Image Src", "Image Command", "Image Position", "Image Alt Text", "Tags Command", "Status", "Published", "Published Scope", "Gift Card", "Variant Weight", "Variant Weight Unit", "Variant Requires Shipping", "Variant Taxable", "Variant Inventory Tracker", "Variant Inventory Policy", "Variant Fulfillment Service" };
             for (int row = 1, column = 1; column <= ShopifyEdgeColumnHeaderNames.Length; column++)
             {
                 feedUILabel($"Filling in Shopify Header: {ShopifyEdgeColumnHeaderNames[column - 1]}");
                 shopifyWorksheet.Cell(row, column).Value = ShopifyEdgeColumnHeaderNames[column - 1];
             }
+        }
+        static bool[] getRowVariantData(IXLWorksheet shopifyWorksheet)
+        {
+            int nonHeaderRows = lastRow - 1;
+            int firstNonHeaderRow = 2;
+            bool[] rowData = new bool[nonHeaderRows];
+            rowData[0] = true;
+            IXLRangeColumn titleColumn = columnArrayFromSourceSheet[(int)ColumnHeadersEnum.itemName]?.rows.Column(1);
+            for(int row = 2; row <= nonHeaderRows; row++)
+            {
+                rowData[row - 1] = !titleColumn.Cell(row).Value.Equals(titleColumn.Cell(row-1).Value);
+            }
+            return rowData;
+        }
+        static void FillShopifyTitleColumn(IXLWorksheet shopifyWorksheet, bool hasVariants, bool hasSizeVariants, bool hasColorVariants)
+        {
+            if (hasSizeVariants) {
+                
+            }
+                
         }
 
     }

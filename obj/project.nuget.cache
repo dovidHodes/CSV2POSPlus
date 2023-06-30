@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "H47z9ncidv886TIBbITu4yZgS5SNwVCFDDKKwT+wgU0OeFRtHojPn0flSKz1zN66WSqI5DJb/h3Ns+bGRrDVog==",
+  "dgSpecHash": "FV8It1TAT9CwGEJuheVDlBBAX96FgpCL3Ph7VHz2PNcGEd5EeeTK5lXvwBGagaEz/NCKEULbKrZWptkNRXmbIA==",
   "success": true,
-  "projectFilePath": "/Users/work/Sync/DOVID HODES/coding/shopifyNonSeasonalFormatter/shopifyNonSeasonalFormatter.csproj",
+  "projectFilePath": "/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/shopifyNonSeasonalFormatter.csproj",
   "expectedPackageFiles": [
     "/Users/work/.nuget/packages/closedxml/0.101.0/closedxml.0.101.0.nupkg.sha512",
     "/Users/work/.nuget/packages/documentformat.openxml/2.16.0/documentformat.openxml.2.16.0.nupkg.sha512",

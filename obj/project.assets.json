@@ -4801,11 +4801,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/work/Sync/DOVID HODES/coding/shopifyNonSeasonalFormatter/shopifyNonSeasonalFormatter.csproj",
+      "projectUniqueName": "/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/shopifyNonSeasonalFormatter.csproj",
       "projectName": "shopifyNonSeasonalFormatter",
-      "projectPath": "/Users/work/Sync/DOVID HODES/coding/shopifyNonSeasonalFormatter/shopifyNonSeasonalFormatter.csproj",
+      "projectPath": "/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/shopifyNonSeasonalFormatter.csproj",
       "packagesPath": "/Users/work/.nuget/packages/",
-      "outputPath": "/Users/work/Sync/DOVID HODES/coding/shopifyNonSeasonalFormatter/obj/",
+      "outputPath": "/Users/work/Sync/dovidHodes/coding/shopifyNonSeasonalFormatter/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/work/.nuget/NuGet/NuGet.Config"
