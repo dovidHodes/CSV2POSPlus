@@ -1,7 +1,7 @@
 ﻿using System;
 using ClosedXML.Excel;
 
-//added:
+//added: TEST
 namespace shopifyNonSeasonalFormatter
 {
     internal class Program
