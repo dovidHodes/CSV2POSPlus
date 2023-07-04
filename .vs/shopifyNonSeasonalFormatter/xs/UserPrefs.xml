@@ -1,15 +1,15 @@
 ﻿<Properties StartupConfiguration="{9CA55D76-8C40-497D-A230-BF62C156DDD1}|Default">
-  <MonoDevelop.Ide.ItemProperties.shopifyNonSeasonalFormatter PreferredExecutionTarget="MonoDevelop.Default" />
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MultiItemStartupConfigurations />
   <MonoDevelop.Ide.Workbench ActiveDocument="Program.cs">
     <Files>
-      <File FileName="Program.cs" Line="285" Column="1" />
+      <File FileName="Program.cs" Line="11" Column="31" />
       <File FileName="stoneEdgeWorkbook.cs" />
     </Files>
   </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.ItemProperties.shopifyNonSeasonalFormatter PreferredExecutionTarget="MonoDevelop.Default" />
+  <MultiItemStartupConfigurations />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
-  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
 </Properties>

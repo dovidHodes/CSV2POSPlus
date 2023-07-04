@@ -8,6 +8,7 @@ namespace shopifyNonSeasonalFormatter
     {
         static IXLWorksheet? sourceWorksheet;
         static int lastRow;
+        static int dataRows = lastRow - 1;
         static int lastColumn;
         static Column[] columnArrayFromSourceSheet = new Column[15];
         static string saveFilepath = @"/Users/work/Desktop/";
@@ -43,27 +44,30 @@ namespace shopifyNonSeasonalFormatter
                 }
                 if (needShopifySpreadsheet)
                 {
-                    XLWorkbook shopifyWorkbook = new XLWorkbook();
-                    IXLWorksheet shopifyWorksheet = shopifyWorkbook.AddWorksheet();
-                    FillInShopifyColumnHeaders(shopifyWorksheet);
                     bool hasColorVariants = columnArrayFromSourceSheet[(int)ColumnHeadersEnum.color_variant] != null;
                     bool hasSizeVariants = columnArrayFromSourceSheet[(int)ColumnHeadersEnum.size] != null;
                     bool hasVariants = hasSizeVariants || hasColorVariants;
-                    bool[] rowData = new bool[lastRow-1];
-                    if (hasVariants) {
-                        rowData = getRowVariantData(shopifyWorksheet);
-                    }
-                    PasteRangeToLocation("title shopify", ColumnHeadersEnum.itemName, shopifyWorksheet, 2, 4);
-                    for(int row = 2; row <= lastRow; row++) {
-                        shopifyWorksheet.Cell(row, 3).Value = rowData[row-2];
-                    }
-                    SaveFileAs(shopifyWorkbook, "SHOPIFY", false);
-                    if (hasSizeVariants)
+                    
+                    XLWorkbook shopifyWorkbook = new XLWorkbook();
+                    IXLWorksheet shopifyWorksheet = shopifyWorkbook.AddWorksheet();
+
+                    FillInShopifyColumnHeaders(shopifyWorksheet);
+
+                    if (hasVariants)
                     {
+                        bool[] isRowSameAsPrevious = new bool[lastRow - 1];
+                        isRowSameAsPrevious = GetRowVariantData(shopifyWorksheet);
 
+                        FillShopifyTitleColumnWithVariantTitles(shopifyWorksheet, isRowSameAsPrevious);
                     }
+                    else
+                    {
+                        PasteRangeToLocation("shopify title", ColumnHeadersEnum.itemName, shopifyWorksheet, 2, 4);
+                    }
+                    
 
 
+                    SaveFileAs(shopifyWorkbook, "SHOPIFY", false);
 
                 }
             }
@@ -77,7 +81,7 @@ namespace shopifyNonSeasonalFormatter
         {
             return columnArrayFromSourceSheet[(int)columnName] != null;
         }
-        static void feedUILabel(string message)
+        static void FeedUILabel(string message)
         {
 
         }
@@ -199,17 +203,16 @@ namespace shopifyNonSeasonalFormatter
                 else
                 {
                     showAlert($"column {columnNumber} column header is empty", "");
-                    requiredDataPresent = false;
-                    break;
+                    //break;
                 }              
             }
             if (requiredDataPresent)
             {
-                for (int i = 0; i < 3; i++)
+                for (int requiredColumnNumber = 0; requiredColumnNumber < 3; requiredColumnNumber++)
                 {
-                    if (columnArrayFromSourceSheet[i] == null)
+                    if (columnArrayFromSourceSheet[requiredColumnNumber] == null)
                     {
-                        string missingField = i == 0 ? "SKU" : i == 1 ? "Item Name" : "Supplier Name";
+                        string missingField = requiredColumnNumber == 0 ? "SKU" : requiredColumnNumber == 1 ? "Item Name" : "Supplier Name";
                         showAlert("missing required column from spreadsheet", $"missing column {missingField.ToUpper()}, which is a neccessary field");
                         requiredDataPresent = false;
                         break;
@@ -222,7 +225,7 @@ namespace shopifyNonSeasonalFormatter
             string[] stoneEdgeColumnHeaderNames = new string[] { "SKU", "Item Name", "Supplier Sku", "Barcode", "Cost", "price", "taxable", "QOH" };
             for (int row = 1, column = 1; column <= stoneEdgeColumnHeaderNames.Length; column++)
             {
-                feedUILabel($"Filling in Stone Edge Header: {stoneEdgeColumnHeaderNames[column - 1]}");
+                FeedUILabel($"Filling in Stone Edge Header: {stoneEdgeColumnHeaderNames[column - 1]}");
                 stoneEdgeWorksheet.Cell(row, column).Value = stoneEdgeColumnHeaderNames[column - 1];
             }
         }
@@ -231,7 +234,7 @@ namespace shopifyNonSeasonalFormatter
             if (ColumnHasData(columnEnum))
             {
                 IXLRange data = columnArrayFromSourceSheet[(int)columnEnum].rows;
-                feedUILabel($"Pasting range to {rangeName}");
+                FeedUILabel($"Pasting range to {rangeName}");
                 data.CopyTo(destinationWorksheet.Cell(destinationRow, destinationColumn));
             }
         }
@@ -310,29 +313,33 @@ namespace shopifyNonSeasonalFormatter
             string[] ShopifyEdgeColumnHeaderNames = new string[] {"Handle", "Variant SKU", "Is New" ,"Title", "Option 1 Name", "Option 1 Value", "Variant Barcode", "Variant Cost", "Variant Price", "Vendor", "Type", "Metafield: custom.gender [single_line_text_field]", "Metafield: custom.color [single_line_text_field]", "Tags", "Body HTML", "Image Src", "Image Command", "Image Position", "Image Alt Text", "Tags Command", "Status", "Published", "Published Scope", "Gift Card", "Variant Weight", "Variant Weight Unit", "Variant Requires Shipping", "Variant Taxable", "Variant Inventory Tracker", "Variant Inventory Policy", "Variant Fulfillment Service" };
             for (int row = 1, column = 1; column <= ShopifyEdgeColumnHeaderNames.Length; column++)
             {
-                feedUILabel($"Filling in Shopify Header: {ShopifyEdgeColumnHeaderNames[column - 1]}");
+                FeedUILabel($"Filling in Shopify Header: {ShopifyEdgeColumnHeaderNames[column - 1]}");
                 shopifyWorksheet.Cell(row, column).Value = ShopifyEdgeColumnHeaderNames[column - 1];
             }
         }
-        static bool[] getRowVariantData(IXLWorksheet shopifyWorksheet)
+        static bool[] GetRowVariantData(IXLWorksheet shopifyWorksheet)
         {
             int nonHeaderRows = lastRow - 1;
             int firstNonHeaderRow = 2;
-            bool[] rowData = new bool[nonHeaderRows];
-            rowData[0] = true;
+            bool[] isRowSameAsPrevious = new bool[nonHeaderRows];
+            isRowSameAsPrevious[0] = true;
             IXLRangeColumn titleColumn = columnArrayFromSourceSheet[(int)ColumnHeadersEnum.itemName]?.rows.Column(1);
             for(int row = 2; row <= nonHeaderRows; row++)
             {
-                rowData[row - 1] = !titleColumn.Cell(row).Value.Equals(titleColumn.Cell(row-1).Value);
+                isRowSameAsPrevious[row - 1] = !titleColumn.Cell(row).Value.Equals(titleColumn.Cell(row-1).Value);
             }
-            return rowData;
+            return isRowSameAsPrevious;
         }
-        static void FillShopifyTitleColumn(IXLWorksheet shopifyWorksheet, bool hasVariants, bool hasSizeVariants, bool hasColorVariants)
+        static void FillShopifyTitleColumnWithVariantTitles(IXLWorksheet shopifyWorksheet, bool[] isRowSameAsPrevious)
         {
-            if (hasSizeVariants) {
-                
+            IXLRangeColumn titleColumn = columnArrayFromSourceSheet[(int)ColumnHeadersEnum.itemName].rows.Column(1);
+            for (int sheetRow = 2, boolRow = 0; sheetRow <= lastRow; sheetRow++, boolRow++)
+            {
+                if (isRowSameAsPrevious[boolRow] == true)
+                {
+                    shopifyWorksheet.Cell(sheetRow, 4).Value = titleColumn.Cell(sheetRow - 1).Value;
+                }
             }
-                
         }
 
     }
@@ -367,6 +374,8 @@ namespace shopifyNonSeasonalFormatter
     }
     // rearrange the order of strings im shopify column header array, to order by importance
     //
+    // add a part that catches if any rows repeat like matrixify
+    //
     // add a bool to set the shopify products as draft
     //
     // maybe better to have the program do all the chesboning of sizes and new products insteasd of the the formulas
@@ -380,4 +389,6 @@ namespace shopifyNonSeasonalFormatter
     //
     // If price column is empty, set it as zero, matrixifty doesnt allow price of 0
     //
+    //
+    // maybe make a second sheet for regular shopify import with other info
 }
