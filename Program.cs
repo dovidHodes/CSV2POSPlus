@@ -30,14 +30,14 @@ namespace shopifyNonSeasonalFormatter
                     XLWorkbook stoneEdgeWorkbook = new XLWorkbook();
                     IXLWorksheet stoneEdgeWorksheet = stoneEdgeWorkbook.AddWorksheet();
                     FillInStoneEdgeColumnHeaders(stoneEdgeWorksheet);
-                    PasteRangeToLocation("SKU", ColumnHeadersEnum.sku, stoneEdgeWorksheet, 2, 1);
+                    PasteRangeToLocation("SKU", ColumnHeadersEnum.sku, stoneEdgeWorksheet,  1);
                     AddStoneEdgeItem_Name(stoneEdgeWorksheet);
-                    PasteRangeToLocation("Supplier SKU", ColumnHeadersEnum.supplier_SKU, stoneEdgeWorksheet, 2, 3);
-                    PasteRangeToLocation("Barcode", ColumnHeadersEnum.barcode, stoneEdgeWorksheet, 2, 4);
-                    PasteRangeToLocation("Cost", ColumnHeadersEnum.cost, stoneEdgeWorksheet, 2, 5);
-                    PasteRangeToLocation("Price", ColumnHeadersEnum.price, stoneEdgeWorksheet, 2, 6);
-                    PasteRangeToLocation("Taxable", ColumnHeadersEnum.taxable, stoneEdgeWorksheet, 2, 7);
-                    PasteRangeToLocation("QOH", ColumnHeadersEnum.QOH, stoneEdgeWorksheet, 2, 8);
+                    PasteRangeToLocation("Supplier SKU", ColumnHeadersEnum.supplier_SKU, stoneEdgeWorksheet,  3);
+                    PasteRangeToLocation("Barcode", ColumnHeadersEnum.barcode, stoneEdgeWorksheet,  4);
+                    PasteRangeToLocation("Cost", ColumnHeadersEnum.cost, stoneEdgeWorksheet,  5);
+                    PasteRangeToLocation("Price", ColumnHeadersEnum.price, stoneEdgeWorksheet,  6);
+                    PasteRangeToLocation("Taxable", ColumnHeadersEnum.taxable, stoneEdgeWorksheet,  7);
+                    PasteRangeToLocation("QOH", ColumnHeadersEnum.QOH, stoneEdgeWorksheet,  8);
 
                     PrintSpreadsheet(stoneEdgeWorksheet);
                     SaveFileAs(stoneEdgeWorkbook, "Stone Edge Sheet", true);
@@ -52,6 +52,8 @@ namespace shopifyNonSeasonalFormatter
                     IXLWorksheet shopifyWorksheet = shopifyWorkbook.AddWorksheet();
 
                     FillInShopifyColumnHeaders(shopifyWorksheet);
+                    PasteRangeToLocation("Shopify handle", ColumnHeadersEnum.itemName, shopifyWorksheet, 1);
+                    PasteRangeToLocation("Shopify SKU", ColumnHeadersEnum.sku, shopifyWorksheet, 2);
 
                     if (hasVariants)
                     {
@@ -59,12 +61,18 @@ namespace shopifyNonSeasonalFormatter
                         isRowSameAsPrevious = GetRowVariantData(shopifyWorksheet);
 
                         FillShopifyTitleColumnWithVariantTitles(shopifyWorksheet, isRowSameAsPrevious);
+                        SetColumnValues("Shopify size column", shopifyWorksheet, 'D', "Size");
+                        PasteRangeToLocation("Shopify sizes", ColumnHeadersEnum.size, shopifyWorksheet, 5);
                     }
                     else
                     {
-                        PasteRangeToLocation("shopify title", ColumnHeadersEnum.itemName, shopifyWorksheet, 2, 4);
+                        PasteRangeToLocation("shopify title", ColumnHeadersEnum.itemName, shopifyWorksheet, 4);
                     }
-                    
+
+                    PasteRangeToLocation("Cost", ColumnHeadersEnum.cost, shopifyWorksheet, 7);
+                    PasteRangeToLocation("price", ColumnHeadersEnum.price, shopifyWorksheet, 8);
+                    PasteRangeToLocation("vendor", ColumnHeadersEnum.supplierName, shopifyWorksheet, 9);
+
 
 
                     SaveFileAs(shopifyWorkbook, "SHOPIFY", false);
@@ -229,13 +237,13 @@ namespace shopifyNonSeasonalFormatter
                 stoneEdgeWorksheet.Cell(row, column).Value = stoneEdgeColumnHeaderNames[column - 1];
             }
         }
-        static void PasteRangeToLocation(string rangeName, ColumnHeadersEnum columnEnum, IXLWorksheet destinationWorksheet, int destinationRow, int destinationColumn)
+        static void PasteRangeToLocation(string rangeName, ColumnHeadersEnum columnEnum, IXLWorksheet destinationWorksheet, int destinationColumn)
         {
             if (ColumnHasData(columnEnum))
             {
                 IXLRange data = columnArrayFromSourceSheet[(int)columnEnum].rows;
                 FeedUILabel($"Pasting range to {rangeName}");
-                data.CopyTo(destinationWorksheet.Cell(destinationRow, destinationColumn));
+                data.CopyTo(destinationWorksheet.Cell(2, destinationColumn));
             }
         }
         static void AddStoneEdgeItem_Name(IXLWorksheet stoneEdgeWorkSheet)
@@ -310,7 +318,7 @@ namespace shopifyNonSeasonalFormatter
         }
         static void FillInShopifyColumnHeaders(IXLWorksheet shopifyWorksheet)
         {
-            string[] ShopifyEdgeColumnHeaderNames = new string[] {"Handle", "Variant SKU", "Is New" ,"Title", "Option 1 Name", "Option 1 Value", "Variant Barcode", "Variant Cost", "Variant Price", "Vendor", "Type", "Metafield: custom.gender [single_line_text_field]", "Metafield: custom.color [single_line_text_field]", "Tags", "Body HTML", "Image Src", "Image Command", "Image Position", "Image Alt Text", "Tags Command", "Status", "Published", "Published Scope", "Gift Card", "Variant Weight", "Variant Weight Unit", "Variant Requires Shipping", "Variant Taxable", "Variant Inventory Tracker", "Variant Inventory Policy", "Variant Fulfillment Service" };
+            string[] ShopifyEdgeColumnHeaderNames = new string[] {"Handle", "Variant SKU", "Title", "Option 1 Name", "Option 1 Value", "Variant Barcode", "Variant Cost", "Variant Price", "Vendor", "Type", "Metafield: custom.gender [single_line_text_field]", "Metafield: custom.color [single_line_text_field]", "Tags", "Body HTML", "Image Src", "Image Command", "Image Position", "Image Alt Text", "Tags Command", "Status", "Published", "Published Scope", "Gift Card", "Variant Weight", "Variant Weight Unit", "Variant Requires Shipping", "Variant Taxable", "Variant Inventory Tracker", "Variant Inventory Policy", "Variant Fulfillment Service" };
             for (int row = 1, column = 1; column <= ShopifyEdgeColumnHeaderNames.Length; column++)
             {
                 FeedUILabel($"Filling in Shopify Header: {ShopifyEdgeColumnHeaderNames[column - 1]}");
@@ -337,9 +345,15 @@ namespace shopifyNonSeasonalFormatter
             {
                 if (isRowSameAsPrevious[boolRow] == true)
                 {
-                    shopifyWorksheet.Cell(sheetRow, 4).Value = titleColumn.Cell(sheetRow - 1).Value;
+                    shopifyWorksheet.Cell(sheetRow, 3).Value = titleColumn.Cell(sheetRow - 1).Value;
                 }
             }
+        }
+        static void SetColumnValues(string columnName, IXLWorksheet worksheet, char columnLetter, string textToFill)
+        {
+            FeedUILabel($"setting range valuse for  column: {columnName}");
+            IXLRange columnRange = worksheet.Range($"{columnLetter}2:{columnLetter}{lastRow}");
+            columnRange.Value = textToFill;
         }
 
     }
@@ -372,6 +386,8 @@ namespace shopifyNonSeasonalFormatter
         color_variant,
         extraTags
     }
+    // jyst set the title range in the column array to be supplier + itemName and dont need to add it later on every time
+    //
     // rearrange the order of strings im shopify column header array, to order by importance
     //
     // add a part that catches if any rows repeat like matrixify
